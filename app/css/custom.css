@@ -1,0 +1,23 @@
+.btn-pami {
+  color: #fff;
+  background-color: #10489c;
+  border-color: #10489c;
+}
+
+.div-fondo-pami {
+    background: linear-gradient(#10489c, #0f3265)
+}
+
+.btn-pami-sm {
+    height: 25px;
+    padding:0px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+@media (min-width: 992px) {
+    .modal-xl {
+        width: 100px;
+        height: 900px; /* control height here */
+    }
+}

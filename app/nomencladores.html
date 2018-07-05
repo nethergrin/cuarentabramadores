@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Nomencladores</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" charset="utf-8" src="js/jquery-3.2.1.js"></script>
+        <script type="text/javascript" charset="utf-8" src="js/bootstrap.bundle.js"></script>
+        <script type="text/javascript" src="util/DataTables-1.10.16/js/jquery.dataTables.js"></script>
+        <script type="text/javascript" src="util/DataTables-1.10.16/js/dataTables.bootstrap4.js"></script>
+        <script type="text/javascript" charset="utf-8" src="js/iconwc.js"></script>
+        <link type="text/css" rel="stylesheet" href="css/bootstrap.css" />
+        <link type="text/css" rel="stylesheet" href="css/custom.css" />
+        <link rel="stylesheet" type="text/css" href="util/DataTables-1.10.16/css/dataTables.bootstrap4.css"/>
+        
+        
+        <script type="text/javascript">
+            
+            function cargarNomencladores(data) {
+                nomencladores = document.getElementById('nomencladores');
+                nomencladores2 = document.getElementById('nomencladores-paridad');
+                options = "";
+                for(i=0; i<data.length; i++) {
+                    options = options+"<option value='"+data[i].id+"'>"+data[i].nombre+"</option>";
+                }
+                
+                // opción todos
+                
+                options = options+"<option value='0'>[Todos]</option>";
+                nomencladores.innerHTML = options;
+                nomencladores2.innerHTML = options;
+                cargarAgrupadores($("#nomencladores").val());
+            }
+            
+            function cargarAgrupadores(id_nomenclador, id_combo_agrupador = 'agrupadores') {
+                
+                url = "/agrupador";
+                if(id_nomenclador != "0") {
+                    url = url+'?id_nomenclador='+id_nomenclador;
+                }
+                $.get(url, 
+                    function(data){
+                        agrupadores = document.getElementById(id_combo_agrupador);
+                        options = "";
+                        for(i=0; i<data.length; i++) {
+                            options = options+"<option value='"+data[i].id+"'>"+data[i].codigo+" - "+data[i].descripcion+"</option>";
+                        }
+                        
+                        // Opcion Todos
+                        options = options+"<option value='0'>[Todos]</option>";
+                        agrupadores.innerHTML = options;
+                        
+                        cargarPrestaciones();
+                });
+            };
+            
+            function cargarPrestaciones() {
+                id_agrupador = $("#agrupadores").val();
+                url = '/prestacion';
+                if(id_agrupador != '0') {
+                    url = url + '?id_agrupador='+id_agrupador;
+                } else {
+                    id_nomenclador = $("#nomencladores").val();
+                    if(id_nomenclador != '0') {
+                        url = url + "?id_nomenclador="+id_nomenclador;
+                    }
+                }
+                
+                $.get(url, 
+                    function(data){
+                        var dataset = [];
+                        for(i=0;i<data.length;i++) {
+                            if(data[i].paridad == 0) {
+                                data[i].paridad = '<span class="badge badge-danger">'+data[i].paridad+'</span>'
+                            } else {
+                                data[i].paridad = '<span class="badge badge-success">'+data[i].paridad+'</span>'
+                            }
+                            mapeos = "<input type='button' class='btn btn-link btn-pami-sm' onclick='mostrarMapeosPorPrestacion("+data[i].id+")' value='Ver Mapeos' />";
+                            detalles = "<input type='button' class='btn btn-link btn-pami-sm' onclick='mostrarDetalle("+data[i].id+")' value='Ver Detalle' />";
+                            comparar = "<input type='button' class='btn btn-link btn-pami-sm' onclick='compararPrestaciones("+data[i].id+")' value='Comparar' />";
+                            row=[data[i].paridad,data[i].codigo, data[i].descripcion, mapeos+detalles+comparar];
+                            dataset[i]=row;
+                        }
+                        $("#prestaciones").DataTable().clear().rows.add(dataset).draw();
+                        
+                    });
+            };
+            
+            function cargarPrestacionesParidad() {
+                id_agrupador = $("#agrupadores-paridad").val();
+                url = '/prestacion';
+                if(id_agrupador != '0') {
+                    url = url + '?id_agrupador='+id_agrupador;
+                } else {
+                    id_nomenclador = $("#nomencladores-paridad").val();
+                    if(id_nomenclador != '0') {
+                        url = url + "?id_nomenclador="+id_nomenclador;
+                    }
+                }
+                
+                $.get(url, 
+                    function(data){
+                        var dataset = [];
+                        for(i=0;i<data.length;i++) {
+                            if(data[i].paridad == 0) {
+                                data[i].paridad = '<span class="badge badge-danger">'+data[i].paridad+'</span>'
+                            } else {
+                                data[i].paridad = '<span class="badge badge-success">'+data[i].paridad+'</span>'
+                            }
+                            mapeos = "<input type='button' class='btn btn-link btn-pami-sm' onclick='actualizarListaMasterPrestacionesParidad("+data[i].id+")' value='Seleccionar' />";
+                            row=[data[i].paridad,data[i].codigo, data[i].descripcion, mapeos];
+                            dataset[i]=row;
+                        }
+                        $("#prestaciones-paridad").DataTable().clear().rows.add(dataset).draw();
+                        
+                    });
+            };
+            
+            function agregarParidad() {
+                $("#txtMasterPrestaciones").val("");
+                $("#lstSeleccionados").find('li').each(function() {
+                    $(this).remove();
+                });
+                $("#lstMasterPrestaciones").find('li').each(function() {
+                    $(this).remove();
+                });
+                $("#modalAgregarParidad").modal('toggle');
+            };
+            
+            function actualizarListaMasterPrestaciones() {
+                texto = document.getElementById("txtMasterPrestaciones").value;
+                n = texto.length;
+                
+                if(n < 3) {
+                    $('[data-toggle="popover"]').popover({
+                        container: 'body'
+                      });
+                      $('[data-toggle="popover"]').popover('enable');
+                      $('[data-toggle="popover"]').popover('show');
+                    return 0;
+                } else {
+                    $('[data-toggle="popover"]').popover('hide');
+                    $('[data-toggle="popover"]').popover('disable');
+                }
+                url = "/masterprestacion?nombre="+texto;
+                $.get(url, function(data){
+                    lista = '';
+                    if(data.length==0) {
+                        lista = lista+'<li class="list-group-item">No hay resultados</li>';
+                        document.getElementById("lstMasterPrestaciones").innerHTML = lista;
+                        return 0;
+                    }
+                    for(i=0; i<data.length; i++) {
+                        lista = lista+'<li class="list-group-item" value="'+data[i].nombre+'" prestacion_id="'+data[i].id+'">'+data[i].id+' - '+data[i].nombre;
+                        if(data[i].concept_id) {
+                            lista = lista+'('+data[i].concept_id+')';
+                        }
+                        lista = lista+'</li>';
+                    }
+                    document.getElementById("lstMasterPrestaciones").innerHTML = lista;
+                    
+                    $("#lstMasterPrestaciones").find('li').each(function() {
+                        $(this).click(function(){
+                            seleccionar($(this).attr('prestacion_id'), $(this).attr("value"));
+                            if($(this).hasClass("list-group-item-success")) {
+                                $(this).removeClass("list-group-item-success");
+                            } else {
+                                $(this).addClass("list-group-item-success");
+                            }
+                        });
+                        id = $(this).attr("prestacion_id");
+                        if($("#lstSeleccionados #"+id).length>0) {
+                            $(this).addClass("list-group-item-success");
+                        } else {
+                            $(this).removeClass("list-group-item-success");
+                        }
+                    });
+                });
+            }
+            
+            function seleccionar(id, value) {
+
+                if($("#lstSeleccionados #"+id).length>0) {
+                    // si existe en la lista, entonces lo borro
+                   $("#lstSeleccionados #"+id).remove();
+                } else {
+                    // si no existe, lo agrego
+                    $("#lstSeleccionados").append('<li class="list-group-item" id="'+id+'">'+id+' - '+value+'</li>');
+                }
+            };
+            
+            function mostrarDetalle(id_prestacion) {
+                $.get('/prestacion/'+id_prestacion, function(data){
+                    prestacion = data[0];
+                    document.getElementById("detalles").innerHTML = prestacion.detalle;
+                    document.getElementById("exclusiones").innerHTML = prestacion.exclusiones;
+                    document.getElementById("inclusiones").innerHTML = prestacion.inclusiones;
+                    document.getElementById("detalleTitulo").innerHTML = prestacion.codigo+" - "+prestacion.descripcion;
+                    
+                    $("#dialogo").modal('toggle');
+                });
+            }
+            
+            function mostrarMapeosPorPrestacion(id_prestacion) {
+                console.log("Mostrar mapeo x prestacion "+id_prestacion);
+                url = '/masterprestacion?id_prestacion='+id_prestacion;
+                $.ajax({
+                    url: url,
+                    type: "GET",
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('Cache-Control', 'no-cache');
+                    },
+                    success: function(data){
+                        var dataset = [];
+                        for(i=0;i<data.length;i++) {
+                            eliminar = "<input type='button' class='btn btn-link btn-pami-sm' onclick='eliminarMapeo("+id_prestacion+", "+data[i].id+")' value='Eliminar Asociación' />"
+                            row=[data[i].id, data[i].nombre, data[i].es_practica, data[i].concept_id, eliminar];
+                            dataset[i]=row;
+                        }
+                        $("#masterprestaciones").DataTable().clear().rows.add(dataset).draw();
+                        $("#prestacionSeleccionada").val(id_prestacion);
+                    }
+                });
+                $("#div-masterprestaciones").addClass("show");
+                //$("#div-prestaciones").removeClass("show");
+            };
+            
+            function actualizarListaMasterPrestacionesParidad(id_prestacion) {
+                
+                url = "/masterprestacion?id_prestacion="+id_prestacion;
+                $.get(url, function(data){
+                    lista = '';
+                    if(data.length===0) {
+                        lista = lista+'<li class="list-group-item">No hay resultados</li>';
+                        document.getElementById("lstMasterPrestaciones").innerHTML = lista;
+                        return 0;
+                    }
+                    for(i=0; i<data.length; i++) {
+                        lista = lista+'<li class="list-group-item" value="'+data[i].nombre+'" prestacion_id="'+data[i].id+'">'+data[i].id+' - '+data[i].nombre;
+                        if(data[i].concept_id) {
+                            lista = lista+'('+data[i].concept_id+')';
+                        }
+                        lista = lista+'</li>';
+                    }
+                    document.getElementById("lstMasterPrestaciones").innerHTML = lista;
+                    
+                    $("#lstMasterPrestaciones").find('li').each(function() {
+                        $(this).click(function(){
+                            seleccionar($(this).attr('prestacion_id'), $(this).attr("value"));
+                            if($(this).hasClass("list-group-item-success")) {
+                                $(this).removeClass("list-group-item-success");
+                            } else {
+                                $(this).addClass("list-group-item-success");
+                            }
+                        });
+                        id = $(this).attr("prestacion_id");
+                        if($("#lstSeleccionados #"+id).length>0) {
+                            $(this).addClass("list-group-item-success");
+                        } else {
+                            $(this).removeClass("list-group-item-success");
+                        }
+                    });
+                });
+            };
+            
+            function switchPrestaciones() {
+                if($("#div-prestaciones").hasClass("show")) {
+                    $("#div-prestaciones").removeClass("show");
+                    $("#prestaciones-up").css("display", "none");
+                    $("#prestaciones-down").css("display", "inline");
+                } else {
+                    $("#div-prestaciones").addClass("show");
+                    $("#prestaciones-up").css("display", "inline");
+                    $("#prestaciones-down").css("display", "none");
+                }
+            };
+            
+            function switchMasterPrestaciones() {
+                if($("#div-masterprestaciones").hasClass("show")) {
+                    $("#div-masterprestaciones").removeClass("show");
+                    $("#masterprestaciones-up").css("display", "none");
+                    $("#masterprestaciones-down").css("display", "inline");
+                } else {
+                    $("#div-masterprestaciones").addClass("show");
+                    $("#masterprestaciones-up").css("display", "inline");
+                    $("#masterprestaciones-down").css("display", "none");
+                }
+            };
+            
+            function eliminarMapeo(id_prestacion, id_master_prestacion) {
+                xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                       alert("Se eliminó la relación");
+                       mostrarMapeosPorPrestacion(id_prestacion);
+                    }
+                };
+                xhr.open("DELETE", "prestacion/"+id_prestacion+"/masterprestacion/"+id_master_prestacion, true);
+                xhr.send();
+            };
+            
+            $(document).ready(function(){
+                $("#prestaciones").DataTable({"lengthMenu": [ [5, 10, 15, 20], [5, 10, 15, 20] ],"pageLength": 5});
+                $("#prestaciones-paridad").DataTable({"lengthMenu": [ [5, 10, 15, 20], [5, 10, 15, 20] ],"pageLength": 5});
+                $("#comparacion").DataTable({"lengthMenu": [ [5, 10, 15, 20], [5, 10, 15, 20] ],"pageLength": 5});
+                
+                $.get('/nomenclador', function(data){cargarNomencladores(data);});
+
+            });
+            
+            function guardarParidad() {
+                id_prestacion = $("#prestacionSeleccionada").val();
+                listaMasterPrestaciones = [];
+                $("#lstSeleccionados li").each(function(){
+                    obj = {id: null, id_prestacion:id_prestacion, id_master_prestacion:$(this).attr("id")};
+                    listaMasterPrestaciones.push(obj);
+                });
+                console.log(listaMasterPrestaciones);
+                xhr = new XMLHttpRequest();
+                xhr.open('POST',"/relprestacionmasterprestacion");
+                xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                xhr.send(JSON.stringify( listaMasterPrestaciones));
+                console.log("Actualizo mapeo "+$("#prestacionSeleccionada").val());
+                mostrarMapeosPorPrestacion($("#prestacionSeleccionada").val());
+            };
+            
+            function nuevaMasterPrestacion() {
+                $("#modalAgregarParidad").modal('toggle');
+                $("#modalMasterPrestacion").modal('toggle');
+                
+                $("#masterPrestacionNombre").val("");
+                $("#masterPrestacionPreparacion").val("");
+                $("#masterPrestacionConceptId").val("");
+                $("#masterEsPractica").val("");
+                
+            };
+            
+            function guardarMasterPrestacion() {
+                // Valido datos
+                id = $("#id_master_prestacion").val();
+                nombre = $("#masterPrestacionNombre").val();
+                preparacion = $("#masterPrestacionPreparacion").val();
+                concept_id = $("#masterPrestacionConceptId").val();
+                es_practica = $("#masterEsPractica option:selected").val();
+                // Validar
+                validaciones = "";
+                if(nombre.length < 3) {
+                    validaciones+="Nombre muy corto\n";
+                }
+                
+                if(nombre.length>200) {
+                    validaciones+="Nombre muy largo\n";
+                }
+                
+                if(preparacion.length > 2000) {
+                    validaciones+="Preparacion muy larga\n";
+                }
+                
+                if(concept_id != "" && isNaN(concept_id)) {
+                    validaciones+="Concept id debe ser numérico";
+                }
+                
+                if(validaciones !="") {
+                    alert(validaciones);
+                    return;
+                }
+                
+                
+                // Intento guardar
+                
+                data = {id: id, nombre: nombre,preparacion: preparacion, concept_id: concept_id, es_practica: es_practica};
+                xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (this.readyState == 4) {     
+                        if(this.status == 204|| this.status==200|| this.status==205|| this.status==201) {
+                            // cierro modal
+                            $("#modalMasterPrestacion").modal('toggle');
+                            // abro modal
+                            $("#modalAgregarParidad").modal('toggle');
+                            // agrego esta prestacion en la lista
+                            actualizarListaMasterPrestaciones();
+                        } else {
+                            alert(xhr.statusText);
+                        }
+                    }
+                };
+                
+                method = "POST";
+                
+                xhr.open(method,"/masterprestacion");
+                xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                
+                xhr.send(JSON.stringify(data));
+                
+            };
+            
+            function cargarDatosComparacion(prestacion) {
+                titulo = document.getElementById("comparacionTitulo");
+                titulo.innerHTML= prestacion[0].descripcion;
+            };
+            
+            function compararPrestaciones(id_prestacion) {
+                
+                url = 'comparar.html?id_prestacion='+id_prestacion;
+                window.location=url;
+                /*
+                $.get('/prestacion/'+id_prestacion+"?v=full", function(data) {cargarDatosComparacion(data);});
+
+                url = '/prestacion/'+id_prestacion+'/masterprestacion';
+
+                $("#comparacion").DataTable().clear().draw();
+                // 1. Buscar relMasterprestaciones incluidas
+                $.get(url, function(masterprestaciones) {
+                    // 2. para cada masterprestacion incluida busco prestaciones
+                    for(i=0; i<masterprestaciones.length; i++) {
+                        masterprestacion = masterprestaciones[i];
+                        
+                        url2 = '/relprestacionmasterprestacion/?id_master_prestacion='+masterprestacion.id;
+                        
+                        $.get(url2, function(rpmps2) {
+                            // 3. Obtengo los datos de cada prestacion
+                            for(j=0; j<rpmps2.length; j++) {
+                                url3 = '/prestacion/'+rpmps2[j].id_prestacion+'?v=full';
+                                $.get(url3, function(prestacion) {
+                                    p = prestacion[0];
+                                    
+                                    agregarPrestacionAComparacion(masterprestacion.nombre, p.nomenclador_nombre, p.agrupador_codigo, p.agrupador_descripcion, p.codigo, p.descripcion)
+                                });
+                            }
+                        });
+                    }
+                });
+                
+                $("#modalComparacion").modal('toggle');
+                
+                */
+                
+            };
+            
+            function exportarPrestaciones() {
+                id_nomenclador = $("#nomencladores").val();
+                id_agrupador = $("#agrupadores").val();
+                url = '/prestacion?id_nomenclador='+id_nomenclador+'&id_agrupador='+id_agrupador+'&format=csv';
+                window.open(url, '_blank');
+            }
+            
+            function exportarMapeos() {
+                id_prestacion = $("#prestacionSeleccionada").val();
+                if(!id_prestacion) {
+                    alert("Debe ver los mapeos de una prestación antes de exportar");
+                    return false;
+                }
+                url = '/masterprestacion?id_prestacion='+id_prestacion+'&format=csv';
+                window.open(url, '_blank');
+            }
+            
+            function agregarPrestacionAComparacion(mp_nombre, n_nombre, a_codigo, a_descripcion, p_codigo, p_descripcion) {
+                dataset=[];
+                dataset[0] = [mp_nombre, n_nombre, a_codigo,a_descripcion, p_codigo, p_descripcion];
+                $("#comparacion").DataTable().rows.add(dataset).draw();
+            };
+            
+            function mostrarBusquedaPrestacion() {
+                $("#tabBusquedaPrestacion").addClass("active");
+                $("#tab-prestacion").addClass("active");
+                $("#tab-prestacion").addClass("show");
+
+                $("#tabBusquedaNomenclador").removeClass("active");
+                $("#tab-nomenclador").removeClass("active");
+                $("#tab-nomenclador").removeClass("show");
+            }
+            
+            function mostrarBusquedaNomenclador() {
+                $("#tabBusquedaNomenclador").addClass("active");
+                $("#tab-nomenclador").addClass("active");
+                $("#tab-nomenclador").addClass("show");
+                
+                $("#tabBusquedaPrestacion").removeClass("active");
+                $("#tab-prestacion").removeClass("active");
+                $("#tab-prestacion").removeClass("show");
+            }
+        </script>
+    </head>
+    <body>
+        <div class="container-fluid small">
+            <!-- barra superior -->
+            <div class="div-fondo-pami" id="barra_superior">
+                <nav class="navbar navbar-expand navbar-dark">
+                    <a class="navbar-brand nav" href="/"><img src="/img/logo_sin_fondo.png" width="30" height="30" alt=""><span style="margin:10px">Integrador de Nomencladores</span></a>
+                    <ul class="nav nav-pills ">
+                        <li class="nav-item" ><a class="nav-link active"  style="color: white;" href="nomencladores.html">Nomencladores</a></li>
+                        <li class="nav-item" ><span class="nav-link"  style="color: white;" >|</span></li>
+                        <li class="nav-item"><a class="nav-link" style="color: white;" href="prestaciones.html">Prestaciones</a></li>
+                        <li class="nav-item" ><span class="nav-link"  style="color: white;" >|</span></li>
+                        <li class="nav-item"><a class="nav-link" style="color: white;" href="abms.html">ABM</a></li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Fin barra superior -->
+   
+            <!-- cuerpo del sitio -->
+            
+            <h3 class="title">Nomencladores</h3>
+            
+            <div class="row">
+                <div class="col col-sm-12 col-md-4">
+                    <select class="form-control" id="nomencladores" onchange="cargarAgrupadores($('#nomencladores').val(), 'agrupadores')"></select>
+                </div>
+                <div class="col col-sm-12 col-md-8">    
+                    <select class="form-control" id="agrupadores" onchange="cargarPrestaciones()"></select>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col col-xs-12">
+                    <div class="card">
+                        <div class="card card-header" onclick="switchPrestaciones()">
+                            <div >Prestaciones del módulo
+                                <svg height="10" width="10" id="prestaciones-up" style="display: inline"><use xlink:href="js/sprite.svg#si-glyph-arrow-up"></use></svg>
+                                <svg height="10" width="10" id="prestaciones-down" style="display:none"><use xlink:href="js/sprite.svg#si-glyph-arrow-down"></use></svg>
+                            </div>
+                        </div>
+                        <div class=" collapse show card-body" id="div-prestaciones">
+                            <table class="table table-hover table-sm" id="prestaciones">
+                                <thead class="thead-dark">
+                                    <th style="width: 20px">#Par</th><th style="width: 100px">Codigo</th><th>Descripcion</th><th style="width: 280px">Acciones</th>
+                                </thead>
+                                <tbody>
+
+                                </tbody>
+                            </table>
+                            <input type="button" value="Exportar" onclick="exportarPrestaciones()" />
+                        </div> 
+                    </div>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col col-xs-12 ">
+                    <div class="card">
+                        <div class="card card-header" onclick="switchMasterPrestaciones()">
+                            <div>Prestaciones asociadas del Maestro de Prestaciones
+                            <svg height="10" width="10" id="masterprestaciones-up" style="display: inline"><use xlink:href="js/sprite.svg#si-glyph-arrow-up"></use></svg>
+                            <svg height="10" width="10" id="masterprestaciones-down" style="display:none"><use xlink:href="js/sprite.svg#si-glyph-arrow-down"></use></svg>
+                            </div>
+                        </div>
+                        <input type="hidden" id="prestacionSeleccionada" value=""/>
+                        <div class="collapse card-body" id="div-masterprestaciones">
+                            <table class="table table-hover table-sm" id="masterprestaciones">
+                                <thead class="thead-dark">
+                                <th style="width: 20px">ID</th><th>Nombre</th><th style="width: 20px">Es Práctica?</th><th style="width: 30px">SCTID</th><th style="width: 200px">Acciones</th>
+                                </thead>
+                                <tbody>
+
+                                </tbody>
+                            </table>
+                            <br>
+                            <div class="row justify-content-end">
+                                <input type="button" class="btn btn-sm btn-pami" value="Agregar Paridad" onclick="agregarParidad()"/>
+                            </div>
+                            <input type="button" value="Exportar" onclick="exportarMapeos()" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+           
+        </div>
+        
+        <!-- MODAL DETALLE -->
+        <div class="modal fade" id="dialogo" tabindex="-1" role="dialog" >
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="detalleTitulo"></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="card">
+                            <div class="card-header">Composici&oacute;n</div>
+                            <div class="card card-body" id="detalles">
+
+                            </div>
+                        </div>
+                        <br>
+                        <div class="card">
+                            <div class="card-header">Inclusiones</div>
+                            <div class="card card-body" id="inclusiones">
+
+                            </div>
+                        </div>
+                        <br>
+                        <div class="card">
+                            <div class="card-header">Exclusiones</div>
+                            <div class="card card-body" id="exclusiones">
+                            
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- MODAL PARIDAD -->
+        <div class="modal fade" id="modalAgregarParidad" tabindex="-1" role="dialog" >
+            <div class="modal-dialog modal-lg" style="max-width: 1000px;width: 1000px" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Agregar Paridad</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <ul class="nav nav-tabs">
+                            <li class="nav-item">
+                                <a id="tabBusquedaPrestacion" class="nav-link active" onclick="mostrarBusquedaPrestacion()">Prestacion del Maestro</a>
+                            </li>
+                            <li class="nav-item">
+                              <a id="tabBusquedaNomenclador" class="nav-link" onclick="mostrarBusquedaNomenclador()">Nomenclador</a>
+                            </li>
+                          </ul>
+                        
+                        <div class="tab-content">
+                            <br>
+                            <div class="tab-pane fade show active" id="tab-prestacion" role="tabpanel">
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <input type="text" id="txtMasterPrestaciones" 
+                                            data-placement="bottom" data-toggle="popover" 
+                                            data-content="El texto de búsqueda debe tener al menos 3 caracteres" 
+                                            class="form-control form-control-sm" 
+                                            placeholder="Buscar prestación en maestro..." 
+                                            onchange="actualizarListaMasterPrestaciones()"
+                                        />
+                                        <div class="input-group-append">
+                                            <div class="input-group-text">Buscar</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="tab-nomenclador" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-sm-6"><select class="form-control" id="nomencladores-paridad" onchange="cargarAgrupadores($('#nomencladores-paridad').val(),'agrupadores-paridad')"></select></div>
+                                    <div class="col-sm-6"><select class="form-control" id="agrupadores-paridad" onchange="cargarPrestacionesParidad()"></select></div>
+                                </div>
+                                <div class="col-sm-12" style="overflow-y: auto; max-height: 250px">
+                                    <br>
+                                    <table class="table table-hover table-sm" id="prestaciones-paridad">
+                                        <thead class="thead-dark">
+                                        <th>#Par</th><th>Codigo</th><th style="width: 500px">Descripcion</th><th>Acciones</th>
+                                        </thead>
+                                        <tbody>
+
+                                        </tbody>
+                                    </table>
+                                    
+                                </div>
+                            </div>
+                            <div class="col-sm-12" style="overflow-y: auto; max-height: 250px">
+                                <ul class="list-group " id="lstMasterPrestaciones">
+                                    
+                                </ul>
+                            </div>
+                            <input type="button" value =" ¿No encuentra la prestacion? Agregue una nueva" class="btn btn-link btn-sm" onclick="nuevaMasterPrestacion()"/>
+                            <hr>
+                            <div class="col-sm-12">
+                                <div class="list-group-item h5">Prestaciones Seleccionadas</div>
+                                <ul class="list-group " id="lstSeleccionados">
+
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success" onclick="guardarParidad()" data-dismiss="modal">Guardar</button>
+                        <button type="button" class="btn btn-pami" data-dismiss="modal">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal nueva prestacion -->
+        <div class="modal fade" id="modalMasterPrestacion" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><span id="detalleMasterPrestacionTitulo"></span> </h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" value="" id="id_master_prestacion" />
+                        <label>Prestacion</label><input class="form-control" type="text" id="masterPrestacionNombre" value=""/>
+                        <label>Preparacion</label><textarea class="form-control" id="masterPrestacionPreparacion" ></textarea>
+                        <label>Concept ID</label><input class="form-control" type="text" id="masterPrestacionConceptId" value=""/>
+                        <label>Es Práctica</label><select class="form-control" id="masterEsPractica"><option value="1">SI</option><option value="0">NO</option></select>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="btnGuardar" type="button" class="btn btn-pami" onclick="guardarMasterPrestacion()">Guardar</button>
+                        <button type="button" class="btn btn-pami" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal comparacion -->
+        <div class="modal fade" id="modalComparacion" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-lg" style="width: 1200px" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><span id="comparacionTitulo"></span> </h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-hover table-sm" id="comparacion">
+                                <thead class="thead-dark">
+                                <th>Prestacion Maestro</th><th>Nomenclador</th><th>Cod. Agr.</th><th>Agrupador</th><th>Cod. Prestacion</th><th>Descripcion</th>
+                                </thead>
+                                <tbody>
+
+                                </tbody>
+                            </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="btnGuardar2" type="button" class="btn btn-pami" onclick="guardarMasterPrestacion()">Guardar</button>
+                        <button type="button" class="btn btn-pami" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

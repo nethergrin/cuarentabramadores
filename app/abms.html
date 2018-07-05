@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>ABM</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" charset="utf-8" src="js/jquery-3.2.1.js"></script>
+        <script type="text/javascript" charset="utf-8" src="js/bootstrap.bundle.js"></script>
+        <script type="text/javascript" src="util/DataTables-1.10.16/js/jquery.dataTables.js"></script>
+        <script type="text/javascript" src="util/DataTables-1.10.16/js/dataTables.bootstrap4.js"></script>
+        <script type="text/javascript" charset="utf-8" src="js/iconwc.js"></script>
+        <link type="text/css" rel="stylesheet" href="css/bootstrap.css" />
+        <link type="text/css" rel="stylesheet" href="css/custom.css" />
+        <link rel="stylesheet" type="text/css" href="util/DataTables-1.10.16/css/dataTables.bootstrap4.css"/>
+        
+        
+        <script type="text/javascript">
+            
+            function cargarComboNomenclador(data, id_combo, todos) {
+                combo = document.getElementById(id_combo);
+                options = "";
+                for(i=0; i<data.length; i++) {
+                    options = options+"<option value='"+data[i].id+"'>"+data[i].nombre+"</option>";
+                }
+                
+                // opción todos
+                if(todos == "1") {
+                    options = options+"<option value='0'>[Todos]</option>";
+                }
+                
+                combo.innerHTML = options;
+            };
+            function cargarComboAgrupador(data, id_combo, todos) {
+                combo = document.getElementById(id_combo);
+                options = "";
+                for(i=0; i<data.length; i++) {
+                    options = options+"<option value='"+data[i].id+"'>"+data[i].descripcion+"</option>";
+                }
+                
+                // opción todos
+                if(todos == "1") {
+                    options = options+"<option value='0'>[Todos]</option>";
+                }
+                
+                combo.innerHTML = options;
+            };
+            
+            function cargarAgrupadores() {
+                id_nomenclador = $("#nomencladores").val();
+                url = "/agrupador";
+                if(id_nomenclador != "0") {
+                    url = url+'?id_nomenclador='+id_nomenclador;
+                }
+                $.get(url, 
+                    function(data){
+                        agrupadores = document.getElementById('agrupadores');
+                        options = "";
+                        for(i=0; i<data.length; i++) {
+                            options = options+"<option value='"+data[i].id+"'>"+data[i].codigo+" - "+data[i].descripcion+"</option>";
+                        }
+                        
+                        // Opcion Todos
+                        options = options+"<option value='0'>[Todos]</option>";
+                        agrupadores.innerHTML = options;
+                        
+                        cargarPrestaciones();
+                });
+            };
+            
+            function cargarListaPrestaciones(data) {
+                var dataset = [];
+                for(i=0;i<data.length;i++) {
+                    prestacion=data[i];
+                    detalles = "<input type='button' class='btn btn-link btn-pami-sm' onclick='mostrarDetalle("+data[i].id+")' value='Ver Detalle' />";
+                    row=[prestacion.nomenclador_nombre, prestacion.agrupador_descripcion,prestacion.codigo, prestacion.descripcion, detalles];
+                    dataset[i]=row;
+                }
+                $("#prestaciones").DataTable().clear().rows.add(dataset).draw();
+
+            };
+            function cargarListaAgrupadores(data, lista) {
+                var dataset = [];
+                for(i=0;i<data.length;i++) {
+                    agrupador=data[i];
+                    detalles = "<input type='button' class='btn btn-link btn-pami-sm' onclick='mostrarDetalle("+data[i].id+")' value='Ver Detalle' />";
+                    row=[agrupador.nomenclador_nombre,agrupador.id, agrupador.codigo, agrupador.descripcion, detalles];
+                    dataset[i]=row;
+                }
+                $("#"+lista).DataTable().clear().rows.add(dataset).draw();
+
+            };
+            function cargarListaNomencladores(data) {
+                var dataset = [];
+                for(i=0;i<data.length;i++) {
+                    nomenclador=data[i];
+                    detalles = "<input type='button' class='btn btn-link btn-pami-sm' onclick='mostrarDetalle("+data[i].id+")' value='Ver Detalle' />";
+                    row=[nomenclador.id, nomenclador.nombre, detalles];
+                    dataset[i]=row;
+                }
+                $("#nomencladores").DataTable().clear().rows.add(dataset).draw();
+
+            };
+            
+            function mostrarDetalle(id_prestacion) {
+                $.get('/prestacion/'+id_prestacion, function(data){
+                    prestacion = data[0];
+                    document.getElementById("detalles").innerHTML = prestacion.detalle;
+                    document.getElementById("exclusiones").innerHTML = prestacion.exclusiones;
+                    document.getElementById("inclusiones").innerHTML = prestacion.inclusiones;
+                    document.getElementById("detalleTitulo").innerHTML = prestacion.codigo+" - "+prestacion.descripcion;
+                    
+                    $("#dialogo").modal('toggle');
+                });
+            };
+            
+            function switchDiv(div) {
+                div = "#"+div;
+                if($(div).hasClass("show")) {
+                    $(div).removeClass("show");
+                    $(div+'-up').css("display", "none");
+                    $(div+'-down').css("display", "inline");
+                } else {
+                    $(div).addClass("show");
+                    $(div+'-up').css("display", "inline");
+                    $(div+'-down').css("display", "none");
+                }
+            };
+            
+            function nuevoNomenclador() {
+                document.getElementById("tituloNomenclador").innerHTML = "Nuevo Nomenclador";
+                $("#nomencladorNombre").val("");
+                $("#nomencladorAbreviatura").val("");
+                
+                $("#modalNomenclador").modal('toggle');
+            };
+            function nuevoAgrupador() {
+                
+                document.getElementById("tituloAgrupador").innerHTML = "Nuevo Agrupador";
+                $("#agrupadorCodigo").val("");
+                $("#agrupadorDescripcion").val("");
+                $("#agrupadorNomenclador").val('');
+                
+                $("#modalAgrupador").modal('toggle');
+            };
+            function nuevaPrestacion() {
+                
+                document.getElementById("tituloPrestacion").innerHTML = "Nueva Prestacion";
+                
+                $("#prestacionNomenclador").val('');
+                actualizarAgrupadores();
+                $("#prestacionCodigo").val("");
+                $("#prestacionDescripcion").val("");
+                $("#prestacionDetalle").val('');
+                $("#prestacionInclusiones").val('');
+                $("#prestacionExclusiones").val('');
+                
+                $("#modalPrestacion").modal('toggle');
+            };
+            
+            function actualizarAgrupadores() {
+                id_nomenclador = $("#prestacionNomenclador").val();
+                $.get('/agrupador?id_nomenclador='+id_nomenclador, function(data){
+                    cargarComboAgrupador(data, "prestacionAgrupador", false);
+                });
+            }
+            
+            function guardarNomenclador() {
+                nombre = $("#nomencladorNombre").val();
+                abreviatura = $("#nomencladorAbreviatura").val();
+                
+                nomenclador = {nombre: nombre, abreviatura: abreviatura};
+                $.post('/nomenclador', nomenclador, function () {
+                    alert("Se guardó el nuevo nomenclador exitosamente");
+                });
+            };
+            
+            function guardarAgrupador() {
+                id_nomenclador = $("#agrupadorNomenclador").val();
+                codigo = $("#agrupadorCodigo").val();
+                descripcion =$("#agrupadorDescripcion").val();
+                
+                agrupador = {codigo: codigo, descripcion: descripcion, id_nomenclador: id_nomenclador};
+                
+                $.post('/agrupador', agrupador, function () {
+                    alert("Se guardó el nuevo agrupador exitosamente");
+                });
+                
+            };
+            
+            function guardarPrestacion() {
+                id_nomenclador = $("#prestacionNomenclador").val();
+                id_agrupador = $("#prestacionAgrupador").val();
+                codigo = $("#prestacionCodigo").val();
+                descripcion = $("#prestacionDescripcion").val();
+                detalle = $("#prestacionDetalle").val();
+                inclusiones = $("#prestacionInclusiones").val();
+                exclusiones = $("#prestacionExclusiones").val();
+                
+                prestacion = {id_nomenclador: id_nomenclador, id_agrupador: id_agrupador, codigo: codigo,
+                    descripcion: descripcion, detalle:detalle, inclusiones: inclusiones, exclusiones: exclusiones };
+                
+                $.post('/prestacion', prestacion, function () {
+                    alert("Se guardó la nueva prestacion exitosamente");
+                });
+            };
+            
+            $(document).ready(function(){
+                $("#prestaciones").DataTable({"lengthMenu": [ [5, 10, 15, 20], [5, 10, 15, 20] ],"pageLength": 5});
+                $("#agrupadores").DataTable({"lengthMenu": [ [5, 10, 15, 20], [5, 10, 15, 20] ],"pageLength": 5});
+                $("#nomencladores").DataTable({"lengthMenu": [ [5, 10, 15, 20], [5, 10, 15, 20] ],"pageLength": 5});
+                
+                $.get('/nomenclador', function(data){
+                    cargarComboNomenclador(data, 'agrupadorNomenclador');
+                    cargarComboNomenclador(data, 'prestacionNomenclador');
+                    cargarListaNomencladores(data);
+                });
+                
+                $.get('/agrupador?v=full', function(data){
+                    cargarListaAgrupadores(data, "agrupadores");
+                });
+                $.get('/prestacion?v=full', function(data){
+                    cargarListaPrestaciones(data);
+                });
+
+            });
+            
+        </script>
+    </head>
+    <body>
+        <div class="container-fluid small">
+            <!-- barra superior -->
+            <div class="div-fondo-pami" id="barra_superior">
+                <nav class="navbar navbar-expand navbar-dark">
+                    <a class="navbar-brand nav" href="/"><img src="/img/logo_sin_fondo.png" width="30" height="30" alt=""><span style="margin:10px">Integrador de Nomencladores</span></a>
+                    <ul class="nav nav-pills ">
+                        <li class="nav-item" ><a class="nav-link"  style="color: white;" href="nomencladores.html">Nomencladores</a></li>
+                        <li class="nav-item" ><span class="nav-link"  style="color: white;" >|</span></li>
+                        <li class="nav-item"><a class="nav-link" style="color: white;" href="prestaciones.html">Prestaciones</a></li>
+                        <li class="nav-item" ><span class="nav-link"  style="color: white;" >|</span></li>
+                        <li class="nav-item"><a class="nav-link active" style="color: white;" href="abms.html">ABM</a></li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Fin barra superior -->
+   
+            <!-- cuerpo del sitio -->
+            
+            <h3 class="title">Nomencladores</h3>
+            
+            <div class="row">
+                <div class="col col-sm-12 col-md-4">
+                    <select class="form-control" id="sel-nomencladores" onchange="cargarAgrupadores()"></select>
+                </div>
+                <div class="col col-sm-12 col-md-8">    
+                    <select class="form-control" id="sel-agrupadores" onchange="cargarPrestaciones()"></select>
+                </div>
+            </div>
+            <br>
+            <!-- Lista de Nomencladores -->
+            <div class="row">
+                <div class="col col-xs-12 ">
+                    <div class="card">
+                        <div class="card card-header" onclick="switchDiv('div-nomencladores')">
+                            <div>Nomencladores
+                            <svg height="10" width="10" id="div-nomencladores-up" style="display: inline"><use xlink:href="js/sprite.svg#si-glyph-arrow-up"></use></svg>
+                            <svg height="10" width="10" id="div-nomencladores-down" style="display:none"><use xlink:href="js/sprite.svg#si-glyph-arrow-down"></use></svg>
+                            </div>
+                        </div>
+                        <div class="collapse card-body" id="div-nomencladores">
+                            <table class="table table-hover table-sm" id="nomencladores">
+                                <thead class="thead-dark ">
+                                    <th style="width: 20px">ID</th><th>Nombre</th><th style="width: 200px">Acciones</th>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                            <br>
+                            <div class="row justify-content-end">
+                                <input type="button" class="btn btn-sm btn-pami" value="Nuevo Nomenclador" onclick="nuevoNomenclador()"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <!-- Lista de Agrupadores -->
+            <div class="row">
+                <div class="col col-xs-12 ">
+                    <div class="card">
+                        <div class="card card-header" onclick="switchDiv('div-agrupadores')">
+                            <div>Agrupadores
+                            <svg height="10" width="10" id="div-agrupadores-up" style="display: inline"><use xlink:href="js/sprite.svg#si-glyph-arrow-up"></use></svg>
+                            <svg height="10" width="10" id="div-agrupadores-down" style="display:none"><use xlink:href="js/sprite.svg#si-glyph-arrow-down"></use></svg>
+                            </div>
+                        </div>
+                        <div class="collapse card-body" id="div-agrupadores">
+                            <table class="table table-hover table-sm" id="agrupadores">
+                                  <thead class="thead-dark ">
+                                    <th>Nomenclador</th><th style="width: 20px">ID</th><th>Código</th><th>Descripcion</th><th style="width: 200px">Acciones</th>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                            <br>
+                            <div class="row justify-content-end">
+                                <input type="button" class="btn btn-sm btn-pami" value="Nuevo Agrupador" onclick="nuevoAgrupador()"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <!-- Lista de Prestaciones -->
+            <div class="row">
+                <div class="col col-xs-12">
+                    <div class="card">
+                        <div class="card card-header" onclick="switchDiv('div-prestaciones')">
+                            <div >Prestaciones del módulo
+                                <svg height="10" width="10" id="div-prestaciones-up" style="display: inline"><use xlink:href="js/sprite.svg#si-glyph-arrow-up"></use></svg>
+                                <svg height="10" width="10" id="div-prestaciones-down" style="display:none"><use xlink:href="js/sprite.svg#si-glyph-arrow-down"></use></svg>
+                            </div>
+                        </div>
+                        <div class=" collapse show card-body" id="div-prestaciones">
+                            <table class="table table-hover table-sm" id="prestaciones">
+                                  <thead class="thead-dark ">
+                                    <th>Nomenclador</th><th>Agrupador</th><th style="width: 100px">Codigo</th><th>Descripcion</th><th style="width: 220px">Acciones</th>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                            <br>
+                            <div class="row justify-content-end">
+                                <input type="button" class="btn btn-sm btn-pami" value="Nueva Prestacion" onclick="nuevaPrestacion()"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+        
+        <!-- MODAL Nomenclador -->
+        <div class="modal fade" id="modalNomenclador" tabindex="-1" role="dialog" >
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><span id="tituloNomenclador"></span></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" value="" id="id_nomenclador" />
+                        <label>Nombre</label><input class="form-control" type="text" id="nomencladorNombre" value=""/>
+                        <label>Abreviatura</label><input class="form-control" id="nomencladorAbreviatura" />
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success" onclick="guardarNomenclador()" data-dismiss="modal">Guardar</button>
+                        <button type="button" class="btn btn-pami" data-dismiss="modal">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal Agrupador -->
+        <div class="modal fade" id="modalAgrupador" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><span id="tituloAgrupador"></span></h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" value="" id="id_agrupador" />
+                        <label>Nomenclador</label><select class="form-control" id="agrupadorNomenclador"></select>
+                        <label>Código</label><input class="form-control" type="text" id="agrupadorCodigo" value=""/>
+                        <label>Descripcion</label><input class="form-control" id="agrupadorDescripcion" />
+                    </div>
+                    <div class="modal-footer">
+                        <button id="btnGuardar" type="button" class="btn btn-success" onclick="guardarAgrupador()">Guardar</button>
+                        <button type="button" class="btn btn-pami" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- MODAL Prestacion -->
+        <div class="modal fade" id="modalPrestacion" tabindex="-1" role="dialog" >
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="tituloPrestacion"></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <label>Nomenclador</label><select class="form-control" id="prestacionNomenclador" onchange="actualizarAgrupadores()"></select>
+                        <label>Agrupador</label><select class="form-control" id="prestacionAgrupador"></select>
+                        <label>Código</label><input class="form-control" type="text" id="prestacionCodigo" value=""/>
+                        <label>Descripci&oacute;n</label><input class="form-control" type="text" id="prestacionDescripcion" value=""/>
+                        <label>Composici&oacute;n</label><textarea class="form-control" id="prestacionDetalle"></textarea>
+                        <label>Inclusiones</label><textarea class="form-control" id="prestacionInclusiones"></textarea>
+                        <label>Exclusiones</label><textarea class="form-control" id="prestacionExclusiones"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success" onclick="guardarPrestacion()" data-dismiss="modal">Guardar</button>
+                        <button type="button" class="btn btn-pami" data-dismiss="modal">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </body>
+</html>

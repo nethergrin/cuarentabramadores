@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Maestro de Prestaciones</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <script type="text/javascript" charset="utf-8" src="js/jquery-3.2.1.js"></script>
+        <script type="text/javascript" charset="utf-8" src="js/bootstrap.js"></script>
+        
+        <script type="text/javascript" src="util/DataTables-1.10.16/js/jquery.dataTables.js"></script>
+        <script type="text/javascript" src="util/DataTables-1.10.16/js/dataTables.bootstrap4.js"></script>
+        <link type="text/css" rel="stylesheet" href="css/bootstrap.css" />
+        <link type="text/css" rel="stylesheet" href="css/custom.css" />
+        <link rel="stylesheet" type="text/css" href="util/DataTables-1.10.16/css/dataTables.bootstrap4.css"/>
+        <script type="text/javascript">
+            
+            function cargarPrestaciones() {
+                $.get('/masterprestacion', function(data){
+                    dataset = [];
+                    for(i=0; i<data.length; i++) {
+                        id = data[i].id; 
+                        nombre = data[i].nombre;
+                        detalle = "<input type='button' class='btn btn-link btn-pami-sm' value='Ver detalle' onclick='mostrarDetalle("+data[i].id+")' /></td>";
+                        mapeos = "<input type='button' class='btn btn-link btn-pami-sm' value='Ver Mapeos' onclick='mostrarMapeos("+data[i].id+")' /></td>";
+                        input = mapeos+detalle;
+                        row = [id, nombre, input];
+                        dataset[i] = row;
+                    }
+
+                    $("#masterprestaciones").DataTable().clear().rows.add(dataset).draw();
+                });
+            };
+            
+            function eliminarMapeo(id_prestacion, id_master_prestacion) {
+                xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                       alert("Se eliminó la relación");
+                       mostrarMapeosPorPrestacion(id_prestacion);
+                    }
+                };
+                xhr.open("DELETE", "prestacion/"+id_prestacion+"/masterprestacion/"+id_master_prestacion, true);
+                xhr.send();
+            };
+            
+            function mostrarMapeos(id) {
+                $("#prestaciones").DataTable().clear().draw();
+                $.get('/relprestacionmasterprestacion/?id_master_prestacion='+id, function(rpmps){
+                    for(i=0;i<rpmps.length; i++) {
+                        $.get('/prestacion/'+rpmps[i].id_prestacion+'?v=full', function(prestaciones){
+                            dataset = [];
+                            for(j=0; j<prestaciones.length; j++) {
+                                nomenclador=prestaciones[j].nomenclador_nombre;
+                                agrupador=prestaciones[j].agrupador_descripcion;
+                                codigo = prestaciones[j].codigo;
+                                detalle = prestaciones[j].descripcion;
+                                acciones = "<input type='button' class='btn btn-link btn-pami-sm' value='Eliminar Asociación' onclick='eliminarMapeo("+prestaciones[j].id+", "+id+")' /></td>";
+                                dataset[j] = [nomenclador, agrupador,codigo,detalle,acciones];
+                            }
+                            $("#prestaciones").DataTable().rows.add(dataset).draw();
+                            $("#masterPrestacionSeleccionada").val(id);
+                        });
+                    }
+                });
+                
+                
+            };
+    
+            function mostrarDetalle(id) {
+                $.get('/masterprestacion/'+id, function(data) {
+                    $("#id_master_prestacion").val(id);
+                    $("#detalleMasterPrestacionTitulo").text(data[0].nombre);
+                    $("#masterPrestacionNombre").val(data[0].nombre);
+                    $("#masterPrestacionNombre").prop('disabled', true);
+                    $("#masterPrestacionPreparacion").val( data[0].preparacion);
+                    $("#masterPrestacionPreparacion").prop('disabled', true);
+                    $("#masterPrestacionConceptId").val(data[0].concept_id);
+                    $("#masterPrestacionConceptId").prop('disabled', true);
+                    $("#masterEsPractica").val(data[0].es_practica);
+                    $("#masterEsPractica").prop('disabled', true);
+                    $("#detalleMasterPrestacion").modal('toggle');
+                    $("#btnEditar").show();
+                    $("#btnGuardar").hide();
+                });
+                
+            };
+            
+            function habilitarEdicion() {
+                $("#masterPrestacionNombre").removeAttr("disabled");
+                $("#masterPrestacionPreparacion").removeAttr("disabled");
+                $("#masterPrestacionConceptId").removeAttr("disabled");
+                $("#masterEsPractica").removeAttr("disabled");
+                $("#btnEditar").hide();
+                $("#btnGuardar").show();
+            };
+            
+            function guardar() {
+                id = $("#id_master_prestacion").val();
+                nombre = $("#masterPrestacionNombre").val();
+                preparacion = $("#masterPrestacionPreparacion").val();
+                concept_id = $("#masterPrestacionConceptId").val();
+                es_practica = $("#masterEsPractica option:selected").val();
+                // Validar
+                validaciones = "";
+                if(nombre.length < 3) {
+                    validaciones+="Nombre muy corto\n";
+                }
+                
+                if(nombre.length>200) {
+                    validaciones+="Nombre muy largo\n";
+                }
+                
+                if(preparacion.length > 2000) {
+                    validaciones+="Preparacion muy larga\n";
+                }
+                
+                if(concept_id != "" && isNaN(concept_id)) {
+                    validaciones+="Concept id debe ser numérico";
+                }
+                
+                if(validaciones !="") {
+                    alert(validaciones);
+                    return;
+                }
+                
+                
+                data = {id: id, nombre: nombre,preparacion: preparacion, concept_id: concept_id, es_practica: es_practica};
+                xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (this.readyState == 4) {     
+                        if(this.status == 204|| this.status==200|| this.status==205|| this.status==201) {
+                            $("#detalleMasterPrestacion").modal('toggle');
+                            cargarPrestaciones();
+                        } else {
+                            alert(xhr.statusText);
+                        }
+                    }
+                };
+                if(id == "") {
+                    method = "POST";
+                } else {
+                    method = "PUT";
+                }
+                xhr.open(method,"/masterprestacion");
+                xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                
+                xhr.send(JSON.stringify(data));
+                
+                
+            };
+            
+            function nuevaPrestacion() {
+                    $("#id_master_prestacion").val("");
+                    $("#detalleMasterPrestacionTitulo").text("Nueva Prestacion");
+                    $("#masterPrestacionNombre").val("");
+                    $("#masterPrestacionPreparacion").val("");
+                    $("#masterPrestacionConceptId").val("");
+                    $("#masterEsPractica").val(1);
+                    $("#masterPrestacionNombre").removeAttr("disabled");
+                    $("#masterPrestacionPreparacion").removeAttr("disabled");
+                    $("#masterPrestacionConceptId").removeAttr("disabled");
+                    $("#masterEsPractica").removeAttr("disabled");
+                    $("#detalleMasterPrestacion").modal('toggle');
+                    $("#btnEditar").hide();
+                    $("#btnGuardar").show();
+            };
+            
+            function agregarParidad() {
+                $("#txtMasterPrestaciones").val("");
+                $("#lstSeleccionados").find('li').each(function() {
+                    $(this).remove();
+                });
+                $("#lstMasterPrestaciones").find('li').each(function() {
+                    $(this).remove();
+                });
+                $("#modalAgregarParidad").modal('toggle');
+            };
+            
+            $(document).ready(function() {
+                $('#masterprestaciones').DataTable({"lengthMenu": [ [5, 10, 15, 20], [5, 10, 15, 20] ],"pageLength": 10});
+                $('#prestaciones').DataTable({"lengthMenu": [ [5, 10, 15, 20], [5, 10, 15, 20] ],"pageLength": 10});
+                cargarPrestaciones();
+            });
+            
+            function guardarParidad() {
+                id_master_prestacion = $("#masterPrestacionSeleccionada").val();
+                listaMasterPrestaciones = [];
+                $("#lstSeleccionados li").each(function(){
+                    obj = {id: null, id_prestacion:id_prestacion, id_master_prestacion:$(this).attr("id")};
+                    listaMasterPrestaciones.push(obj);
+                });
+                console.log(listaMasterPrestaciones);
+                xhr = new XMLHttpRequest();
+                xhr.open('POST',"/relprestacionmasterprestacion");
+                xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                xhr.send(JSON.stringify( listaMasterPrestaciones));
+                console.log("Actualizo mapeo "+id_master_prestacion);
+                //mostrarMapeosPorPrestacion(id_master_prestacion);
+            };
+            
+            function exportarPrestaciones() {
+                url = '/prestacion?&format=csv';
+                window.open(url, '_blank');
+            };
+            
+            
+        </script>
+    </head>
+    <body>
+        <div class="container-fluid small">
+            <div class="div-fondo-pami" id="barra_superior">
+                <nav class="navbar navbar-expand navbar-dark">
+                    <a class="navbar-brand nav" href="/"><img src="/img/logo_sin_fondo.png" width="30" height="30" alt=""><span style="margin:10px">Integrador de Nomencladores</span></a>
+                    <ul class="nav nav-pills ">
+                        <li class="nav-item" ><a class="nav-link"  style="color: white;" href="nomencladores.html">Nomencladores</a></li>
+                        <li class="nav-item" ><span class="nav-link"  style="color: white;" >|</span></li>
+                        <li class="nav-item"><a class="nav-link active" style="color: white;" href="prestaciones.html">Prestaciones</a></li>
+                        <li class="nav-item" ><span class="nav-link"  style="color: white;" >|</span></li>
+                        <li class="nav-item"><a class="nav-link" style="color: white;" href="abms.html">ABM</a></li>
+                    </ul>
+                </nav>
+            </div>
+            <h3>Maestro de Prestaciones</h3>
+            
+            <div class="row">
+                <div class="col col-xs-12">
+                    <div class="card">
+                        <div class="card card-header">
+                            <div >Prestaciones </div>
+                        </div>
+                        <div class="card-body" id="div-prestaciones">
+                            <table class="table table-hover table-sm" id="masterprestaciones">
+                                <thead class="thead-dark"><th style="width: 20px">Codigo</th><th>Nombre</th><th style="width: 250px">Acciones</th></thead>
+                                <tbody></tbody>
+                            </table>
+                            <input type="button" value="Exportar" onclick="exportarPrestaciones()" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row justify-content-end">
+                <input style="margin: 5px" type="button" value="Nueva Prestacion" class="btn btn-pami" onclick="nuevaPrestacion()" />
+                <input style="margin: 5px; margin-right: 20px;" type="button" value="Volver" class="btn btn-pami" onclick="window.location='index.html'" />
+            </div>
+            
+            <div class="row">
+                <div class="col col-xs-12 ">
+                    <div class="card">
+                        <div class="card card-header">
+                            <div>Prestaciones de nomencladores asociadas</div>
+                        </div>
+                        <div class="card-body" id="div-masterprestaciones">
+                            <table class="table table-hover table-sm" id="prestaciones">
+                                <thead class="thead-dark"><th style="width: 200px">Nomenclador</th><th>Agrupador</th><th style="width: 50px">Codigo</th><th>Nombre</th><th>Acciones</th></thead>
+                                <tbody></tbody>
+                            </table>
+                            <br>
+                            <!--div class="row justify-content-end">
+                                <input type="button" class="btn btn-sm btn-pami" value="Agregar Paridad" onclick="agregarParidad()"/>
+                            </div-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" id="masterPrestacionSeleccionada" value=""/>
+            <!-- Modal -->
+            <div class="modal fade" id="detalleMasterPrestacion" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><span id="detalleMasterPrestacionTitulo"></span> </h5>
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" value="" id="id_master_prestacion" />
+                            <label>Prestacion</label><input disabled class="form-control" type="text" id="masterPrestacionNombre" value=""/>
+                            <label>Preparacion</label><textarea disabled class="form-control" id="masterPrestacionPreparacion" ></textarea>
+                            <label>Concept ID</label><input disabled class="form-control" type="text" id="masterPrestacionConceptId" value=""/>
+                            <label>Es Práctica</label><select class="form-control" id="masterEsPractica"><option value="1">SI</option><option value="0">NO</option></select>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="btnGuardar" type="button" class="btn btn-success" onclick="guardar()" style="display:none">Guardar</button>
+                            <button id="btnEditar" type="button" class="btn btn-primary" onclick="habilitarEdicion()">Editar</button>
+                            <button type="button" class="btn btn-pami" data-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- MODAL PARIDAD -->
+        <div class="modal fade" id="modalAgregarParidad" tabindex="-1" role="dialog" >
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Agregar Paridad</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Nomenclador</label>
+                            <select class="form-control" id="selectNomenclador"></select>
+                            <label>Agrupador</label>
+                            <select class="form-control" id="selectAgrupador"></select>
+                            
+                        </div>
+                        
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success" onclick="guardarParidad()" data-dismiss="modal">Guardar</button>
+                        <button type="button" class="btn btn-pami" data-dismiss="modal">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </body>
+</html>

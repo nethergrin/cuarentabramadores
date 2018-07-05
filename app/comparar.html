@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Comparar prestaciones</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" charset="utf-8" src="js/jquery-3.2.1.js"></script>
+        <script type="text/javascript" charset="utf-8" src="js/bootstrap.bundle.js"></script>
+        <script type="text/javascript" src="util/DataTables-1.10.16/js/jquery.dataTables.js"></script>
+        <script type="text/javascript" src="util/DataTables-1.10.16/js/dataTables.bootstrap4.js"></script>
+        <script type="text/javascript" charset="utf-8" src="js/iconwc.js"></script>
+        <script type="text/javascript" charset="utf-8" src="util/util.js"></script>
+        <link type="text/css" rel="stylesheet" href="css/bootstrap.css" />
+        <link type="text/css" rel="stylesheet" href="css/bootstrap-grid.css" />
+        <link type="text/css" rel="stylesheet" href="css/custom.css" />
+        <link rel="stylesheet" type="text/css" href="util/DataTables-1.10.16/css/dataTables.bootstrap4.css"/>
+        
+        
+        <script type="text/javascript">
+            
+            function cargarPrestacion(id_prestacion, panel) {
+                console.log(arguments);
+                $.get("/prestacion/"+id_prestacion+"?v=full", function(data) {
+                    console.log(data[0]);
+                    titulo = data[0].descripcion;
+                    codigo = data[0].codigo;
+                    agrupador_codigo = data[0].agrupador_codigo;
+                    agrupador = data[0].agrupador_descripcion;
+                    nomenclador = data[0].nomenclador_nombre;
+                    inclusiones = data[0].inclusiones;
+                    exclusiones = data[0].exclusiones;
+                    detalle = data[0].detalle;
+                    console.log(codigo+" - "+titulo);
+                    document.getElementById(panel+"_titulo").innerHTML = (codigo+" - "+titulo);
+                    $("#"+panel+"_agrupador").val(agrupador_codigo + " - "+agrupador);
+                    $("#"+panel+"_nomenclador").val(nomenclador);
+                    $("#"+panel+"_inclusiones").val(inclusiones);
+                    $("#"+panel+"_exclusiones").val(exclusiones);
+                    $("#"+panel+"_detalle").val(detalle);
+                    
+                    
+                });
+                
+            };
+            
+            function compararPrestaciones(id_prestacion) {
+                $("#comparacion").DataTable().clear().draw();
+                url = "/prestacion/"+id_prestacion+"/comparacion";
+                $.get(url, function(data) {
+                    for(i=0; i<data.length; i++) {
+                        agregarPrestacionAComparacion(data[i]);
+                    }
+                });
+                
+                
+                
+            };
+            
+            function agregarPrestacionAComparacion(data) {
+                dataset=[];
+                sel = '<input type="radio" name="seleccion" value="'+data.p_id+'" onclick="cargarPrestacion(this.value, \'panel_destino\')"/>';
+                dataset[0] = [data.mp_nombre, data.n_nombre, data.a_codigo,data.a_descripcion, data.p_codigo, data.p_descripcion, sel];
+                $("#comparaciones").DataTable().rows.add(dataset).draw();
+            };
+            
+            function switchPrestaciones() {
+                if($("#div-prestaciones").hasClass("show")) {
+                    $("#div-prestaciones").removeClass("show");
+                    $("#prestaciones-up").css("display", "none");
+                    $("#prestaciones-down").css("display", "inline");
+                } else {
+                    $("#div-prestaciones").addClass("show");
+                    $("#prestaciones-up").css("display", "inline");
+                    $("#prestaciones-down").css("display", "none");
+                }
+            };
+    
+            $(document).ready(function(){
+                $("#comparaciones").DataTable({"lengthMenu": [ [5, 10, 15, 20], [5, 10, 15, 20] ],"pageLength": 5});
+                qs = parseQueryString();
+                if(qs["id_prestacion"]) {
+                    id_prestacion = qs["id_prestacion"]
+                    cargarPrestacion(id_prestacion, 'panel_origen');
+                    compararPrestaciones(id_prestacion);
+                } else {
+                    alert("No se ha seleccionado ninguna prestacion");
+                    setTimeout(salir,2000);
+                    
+                }
+                
+            });
+            
+            function salir() {
+                console.log("ejecuto salir");
+                window.location='nomencladores.html';
+            }
+            
+        </script>
+    </head>
+    <body>
+        <div class="container-fluid small">
+            <!-- barra superior -->
+            <div class="div-fondo-pami" id="barra_superior">
+                <nav class="navbar navbar-expand navbar-dark">
+                    <a class="navbar-brand nav" href="/"><img src="/img/logo_sin_fondo.png" width="30" height="30" alt=""><span style="margin:10px">Integrador de Nomencladores</span></a>
+                    <ul class="nav nav-pills ">
+                        <li class="nav-item" ><a class="nav-link active"  style="color: white;" href="nomencladores.html">Nomencladores</a></li>
+                        <li class="nav-item" ><span class="nav-link"  style="color: white;" >|</span></li>
+                        <li class="nav-item"><a class="nav-link" style="color: white;" href="prestaciones.html">Prestaciones</a></li>
+                        <li class="nav-item" ><span class="nav-link"  style="color: white;" >|</span></li>
+                        <li class="nav-item"><a class="nav-link" style="color: white;" href="abms.html">ABM</a></li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Fin barra superior -->
+   
+            <!-- cuerpo del sitio -->
+            
+            <h3 class="title">Nomencladores</h3>
+            
+            <!-- div class="row">
+                <div class="col col-sm-12 col-md-4">
+                    <select class="form-control" id="nomencladores" onchange=""></select>
+                </div>
+                <div class="col col-sm-12 col-md-8">    
+                    <select class="form-control" id="agrupadores" onchange=""></select>
+                </div>
+            </div -->
+            <br>
+            <div class="row">
+                <div class="col col-xs-12">
+                    <div class="card">
+                        <div class="card card-header" onclick="switchPrestaciones()">
+                            <div >Prestaciones del módulo
+                                <svg height="10" width="10" id="prestaciones-up" style="display: inline"><use xlink:href="js/sprite.svg#si-glyph-arrow-up"></use></svg>
+                                <svg height="10" width="10" id="prestaciones-down" style="display:none"><use xlink:href="js/sprite.svg#si-glyph-arrow-down"></use></svg>
+                            </div>
+                        </div>
+                        <div class=" collapse show card-body" id="div-prestaciones">
+                            <table class="table table-hover table-sm" id="comparaciones">
+                                <thead class="thead-dark">
+                                <th style="width: 150px">Prestación Maestro</th><th style="width: 80px">Nomenclador</th><th style="width: 30px">Cod. Agr.</th><th style="width: 150px">Agrupador</th><th style="width: 30px">Cod. Prest.</th><th>Prestación</th><th style="width: 30px">Seleccionar</th>
+                                </thead>
+                                <tbody>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col col-sm-6">
+                    <div class="card">
+                        <div class="card-header " style="min-height: 100px;"><span id="panel_origen_titulo"></span></div>
+                        <div class="card-body">
+                            <label>Nomenclador</label>
+                            <input type="text" class="form-control" id ="panel_origen_nomenclador" />
+                            <label>Agrupador</label>
+                            <input type="text" class="form-control" id ="panel_origen_agrupador" />
+                            <label>Inclusiones</label>
+                            <input type="text" class="form-control" id ="panel_origen_inclusiones" />
+                            <label>Exclusiones</label>
+                            <input type="text" class="form-control" id ="panel_origen_exclusiones" />
+                            <label>Detalle</label>
+                            <input type="text" class="form-control" id ="panel_origen_detalle" />
+                            
+                           
+                        </div>
+                    </div>
+               </div>
+                <div class="col col-sm-6">
+                    <div class="card">
+                        <div class="card card-header" style="min-height: 100px;">
+                            <span id="panel_destino_titulo">Seleccione una prestacion para comparar</span>
+                        </div>
+                        <div class="card-body">
+                            <label>Nomenclador</label>
+                            <input type="text" class="form-control" id ="panel_destino_nomenclador" />
+                            <label>Agrupador</label>
+                            <input type="text" class="form-control" id ="panel_destino_agrupador" />
+                            <label>Inclusiones</label>
+                            <input type="text" class="form-control" id ="panel_destino_inclusiones" />
+                            <label>Exclusiones</label>
+                            <input type="text" class="form-control" id ="panel_destino_exclusiones" />
+                            <label>Detalle</label>
+                            <input type="text" class="form-control" id ="panel_destino_detalle" />
+                            
+                           
+                        </div>
+                     </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

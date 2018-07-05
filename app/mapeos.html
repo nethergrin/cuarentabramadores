@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Nomencladores</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+         <link type="text/css" rel="stylesheet" href="css/bootstrap.css" />
+        <script type="text/javascript" charset="utf-8" src="js/bootstrap.js"></script>
+        <script type="text/javascript" charset="utf-8" src="js/jquery-3.2.1.js"></script>
+        <link rel="stylesheet" type="text/css" href="util/DataTables-1.10.16/css/dataTables.bootstrap4.css"/>
+        <script type="text/javascript" src="util/DataTables-1.10.16/js/jquery.dataTables.js"></script>
+        <script type="text/javascript" src="util/DataTables-1.10.16/js/dataTables.bootstrap4.js"></script>
+        <script type="text/javascript">
+            
+            function cargarNomencladores(data) {
+                nomencladores = document.getElementById('nomencladores');
+                options = "";
+                for(i=0; i<data.length; i++) {
+                    options = options+"<option value='"+data[i].id+"'>"+data[i].nombre+"</option>";
+                }
+                nomencladores.innerHTML = options;
+                cargarAgrupadores();
+            }
+            
+            function cargarAgrupadores() {
+                id_nomenclador = $("#nomencladores").val();
+                $.get('/agrupador?id_nomenclador='+id_nomenclador, 
+                    function(data){
+                        agrupadores = document.getElementById('agrupadores');
+                        options = "";
+                        for(i=0; i<data.length; i++) {
+                            options = options+"<option value='"+data[i].id+"'>"+data[i].codigo+" - "+data[i].descripcion+"</option>";
+                        }
+                        agrupadores.innerHTML = options;
+                        
+                        cargarPrestaciones();
+                });
+            };
+            
+            function cargarPrestaciones() {
+                id_agrupador = $("#agrupadores").val();
+                
+                $.get('/prestacion?id_agrupador='+id_agrupador, 
+                    function(data){
+                        var dataset = [];
+                        for(i=0;i<data.length;i++) {
+                            row=[data[i].codigo, data[i].descripcion, "<input type='button' class='btn btn-link' onclick='mostrarMapeosPorPrestacion("+data[i].id+")' value='Ver Mapeos' />"];
+                            dataset[i]=row;
+                        }
+                        $("#prestaciones").DataTable().clear().rows.add(dataset).draw();
+                        
+                    });
+            };
+            
+            function mostrarMapeosPorPrestacion(id_prestacion) {
+                $.get('/prestacion?id='+id_prestacion, 
+                    function(data){
+                        
+                    });
+            };
+            
+            $(document).ready(function(){
+                $("#prestaciones").DataTable();
+                $.get('/nomenclador', function(data){cargarNomencladores(data);});
+
+            });
+        </script>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Nomencladores</h1>
+            <div class="row">
+                <div class="col col-sm-12 col-md-6">
+                    <select class="form-control" id="nomencladores" onchange="cargarAgrupadores()"></select>
+                    <br>
+                    <select class="form-control" id="agrupadores" onchange="cargarPrestaciones()"></select>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <table class="table table-hover table-sm" id="prestaciones">
+                    <thead class="thead-dark">
+                        <th width="100">Codigo</th><th>Nombre</th><th width="200">Acciones</th>
+                    </thead>
+                    <tbody>
+                        
+                    </tbody>
+                </table>
+                
+                <table id="mapeos">
+                    
+                </table>
+            </div>
+        </div>
+    </body>
+</html>

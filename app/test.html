@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" charset="utf-8" src="js/jquery-3.2.1.js"></script>
+        <script type="text/javascript" charset="utf-8" src="js/bootstrap.js"></script>
+        <link type="text/css" rel="stylesheet" href="css/bootstrap.css" />
+        <script type="text/javascript">
+            function prestacionmasterprestacionPost() {
+                xhr = new XMLHttpRequest();
+                xhr.open('POST',"/relprestacionmasterprestacion");
+                xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                data = [
+                    {id:null, id_prestacion: 1, id_master_prestacion:1},
+                    {id:null, id_prestacion: 1, id_master_prestacion:1},
+                    {id:null, id_prestacion: 1, id_master_prestacion:1},
+                    {id:null, id_prestacion: 1, id_master_prestacion:1}
+                ];
+                console.log(data);
+                xhr.send(JSON.stringify( data));
+            };
+        </script>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Testing</h1>
+            <div class="row">
+                <div class="col">
+                    <label>Nomenclador</label>
+                    <input class="form-control" type="button" value="GET" onclick="nomencladorGet()"/><label id="nomencladorGet"></label>
+                    <input class="form-control" type="button" value="POST" onclick="nomencladorPost()"/><label id="nomencladorPost"></label>
+                    <input class="form-control" type="button" value="PUT" onclick="nomencladorPut()"/><label id="nomencladorPut"></label>
+                    <input class="form-control" type="button" value="DELETE" onclick="nomencladorDelete()"/><label id="nomencladorDelete"></label>
+                </div>
+                <br>
+                <div class="col">
+                    <label>Agrupador</label>
+                    <input class="form-control" type="button" value="GET" onclick="agrupadorGet()"/><label id="agrupadorGet"></label>
+                    <input class="form-control" type="button" value="POST" onclick="agrupadorPost()"/><label id="agrupadorPost"></label>
+                    <input class="form-control" type="button" value="PUT" onclick="agrupadorPut()"/><label id="agrupadorPut"></label>
+                    <input class="form-control" type="button" value="DELETE" onclick="agrupadorDelete()"/><label id="agrupadorDelete"></label>
+                </div>
+                <br>
+                <div class="col">
+                    <label>Prestacion</label>
+                    <input class="form-control" type="button" value="GET" onclick="prestacionGet()"/><label id="prestacionGet"></label>
+                    <input class="form-control" type="button" value="POST" onclick="prestacionPost()"/><label id="prestacionPost"></label>
+                    <input class="form-control" type="button" value="PUT" onclick="prestacionPut()"/><label id="prestacionPut"></label>
+                    <input class="form-control" type="button" value="DELETE" onclick="prestacionDelete()"/><label id="prestacionDelete"></label>
+                </div>
+                <br>
+                <div class="col">
+                    <label>Masterprestacion</label>
+                    <input class="form-control" type="button" value="GET" onclick="masterprestacionGet()"/><label id="masterprestacionGet"></label>
+                    <input class="form-control" type="button" value="POST" onclick="masterprestacionPost()"/><label id="masterprestacionPost"></label>
+                    <input class="form-control" type="button" value="PUT" onclick="masterprestacionPut()"/><label id="masterprestacionPut"></label>
+                    <input class="form-control" type="button" value="DELETE" onclick="masterprestacionDelete()"/><label id="masterprestacionDelete"></label>
+                </div>
+                <br>
+                <div class="col">
+                    <label>RelPrestacionMasterPrestacion</label>
+                    <input class="form-control" type="button" value="GET" onclick="prestacionmasterprestacionGet()"/><label id="prestacionmasterprestacionGet"></label>
+                    <input class="form-control" type="button" value="POST" onclick="prestacionmasterprestacionPost()"/><label id="prestacionmasterprestacionPost"></label>
+                    <input class="form-control" type="button" value="PUT" onclick="prestacionmasterprestacionPut()"/><label id="prestacionmasterprestacionPut"></label>
+                    <input class="form-control" type="button" value="DELETE" onclick="prestacionmasterprestacionDelete()"/><label id="prestacionmasterprestacionDelete"></label>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
