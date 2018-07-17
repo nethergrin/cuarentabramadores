@@ -35,10 +35,14 @@ app.route('/nomenclador')
     .get(function(req, res) {
         logger.info("Nomenclador - Get");
         nomenclador_service.get(req.query, function(result) {
+            if(result.error) {
+                res.status('400');
+            } else {
+                res.status('200');
+                res.set('Content-type', 'application/json');
+            }
             
-            res.set('Content-type', 'application/json');
-            res.status(result.code);
-            res.send(result.rs);
+            res.send(result);
         });   
     })
     .post(function(req, res) {
@@ -58,26 +62,41 @@ app.route('/agrupador')
     .get(function(req, res) {
         logger.info("Agrupador - Get");
         agrupadorService.get(req.query, function(result) {
-            logger.debug("ejecuto callback");
             
-            
-            if(req.query.format === "csv") {
-                logger.debug("Convierto a csv");
-                result = json2csv.parse(result);
-                res.attachment('export.csv');
+            logger.debug("ejecuto callback de Agrupador.Get");
+            if(result.error) {
+                res.status('101');
+            } else {
+                res.status('200');
+                
+                if(req.query.format === "csv") {
+                    logger.debug("Convierto a csv");
+                    result = json2csv.parse(result);
+                    res.attachment('export.csv');
+                }
             }
             res.send(result);
     });   
 })
     .post(function(req, res) {
-        logger.info("Agrupador - Post");
+        logger.debug("Agrupador - Post");
         agrupadorService.post(req.body, function(result) {
+            if(result.error) {
+                res.status(result.code);
+            } else {
+                res.status(201);
+            }
             res.send(result);
         });   
 })
     .put(function(req, res){
         logger.info("Agrupador - Put");
         agrupadorService.put(req.body, function(result) {
+            if(result.error) {
+                res.status(result.code);
+            } else {
+                res.status(205);
+            }
             res.send(result);
         });
     
@@ -87,20 +106,35 @@ app.route('/prestacion')
     .get(function(req, res) {
         logger.info("Prestacion - Get");
         prestacion_service.get(req.query, function(result) {
-            if(req.query.format === "csv") {
-                logger.debug("Convierto a csv");
-                result = json2csv.parse(result);
-                res.attachment('export.csv');
+            logger.debug("ejecuto callback de Prestacion.Get");
+            
+            if(result.error) {
+                res.status('101');
+            } else {
+                res.status('200');
+               
+                if(req.query.format === "csv") {
+                    logger.debug("Convierto a csv");
+                    result = json2csv.parse(result);
+                    res.attachment('export.csv');
+                }
             }
-        res.send(result);
+            res.send(result);
     });   
 })
     .post(function(req, res) {
         logger.info("Prestacion - Post");
         prestacion_service.post(req.body, function(result) {
-            res.set('Content-type', 'application/json');
-            res.status(result.code);
+            
+            if(result.error) {
+                res.status(result.code);
+            } else {
+                res.status('201');
+                res.set('Content-type', 'application/json');
+            }
+            
             res.send(result);
+            res.end();
         });   
 })
     .put(function(req, res){
@@ -119,13 +153,22 @@ app.route('/prestacion/:id')
             req.params.v="full";
         }
         logger.info("GET con id: "+ req.params.id);
+        
         prestacion_service.get(req.params, function(result) {
-            if(req.query.format === "csv") {
-                logger.debug("Convierto a csv");
-                result = json2csv.parse(result);
-                res.attachment('export.csv');
+            
+            if(result.error) {
+                res.status='101';
+            } else {
+                res.status='200';
+
+                if(req.query.format === "csv") {
+                    logger.debug("Convierto a csv");
+                    result = json2csv.parse(result);
+                    res.attachment('export.csv');
+                }
             }
-        res.send(result);
+
+            res.send(result);
     }); 
 });
 
@@ -133,10 +176,16 @@ app.route('/prestacion/:id_prestacion/masterprestacion/:id')
     .get(function(req, res) {
         logger.info("Prestacion/:id_prestacion/masterprestacion/:id - Get");
         masterprestacion_service.get(req.params, function(result) {
-            if(req.query.format === "csv") {
-                logger.debug("Convierto a csv");
-                result = json2csv.parse(result);
-                res.attachment('export.csv');
+            if(result.error) {
+                res.status='101';
+            } else {
+                res.status='200';
+
+                if(req.query.format === "csv") {
+                    logger.debug("Convierto a csv");
+                    result = json2csv.parse(result);
+                    res.attachment('export.csv');
+                }
             }
             res.send(result);
         });
@@ -208,7 +257,14 @@ app.post('/masterprestacion', function (req, res) {
     logger.info("masterprestacion - Post");
     masterprestacion_service.post(req.body, function(result) {
         logger.info("Ejecuto callback de Post");
-        res.status(result.code);
+        
+        if(result.error) {
+            res.status(result.code);
+        } else {
+            res.status('201');
+            res.set('Content-type', 'application/json');
+        }
+
         res.send(result);
         res.end();
     });
@@ -218,8 +274,15 @@ app.put('/masterprestacion', function (req, res) {
     logger.info("masterprestacion - Put");
     masterprestacion_service.put(req.body, function(result){
         logger.info("Ejecuto callback");
-        res.status(result.code);
-        res.send(result.result);
+        if(result.error) {
+            res.status(result.code);
+        } else {
+            res.status('205');
+            res.set('Content-type', 'application/json');
+        }
+
+        res.send(result);
+        res.end();
     });
 });
 

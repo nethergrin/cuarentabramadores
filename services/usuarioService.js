@@ -8,7 +8,8 @@
 var mysql = require("mysql");
 var config = require("../config.js");
 var logger = require('../logger.js');
-
+var database = require("../base.js");
+var crypto = require('crypto');
 
 
 
@@ -27,52 +28,36 @@ var UsuarioService =
     get: function (data, callback) {
         logger.debug("UsuarioService.get");
         logger.debug(data);
-        setTimeout(function (){
-            pool.getConnection(function(err, connection) {
-                if(err) {
-                    callback({"code" : 100, "status" : err.code, description: err.sqlMessage});
-                    logger.error(err);
-                    return;
-                }
-
-                select = "select * ";
-                from = " from usuario ";
-
-                query = select + from;
-
-                filtro = "";
-                if(data.id) {
-                    filtro = filtro + " id = "+data.id;
-                }
-
-                if(data.descripcion) {
-                    if(filtro!="") {filtro = filtro+" AND ";}
-                    filtro = filtro + " nombre like('%"+data.nombre.replace(" ", "%")+"%')";
-                }
-
-                if(data.codigo) {
-                    if(filtro!="") {filtro = filtro+" AND ";}
-                    filtro = filtro + " apellido ="+data.apellido.replace(" ", "%")+"%')";
-                }
-
-                if(filtro!="") {
-                    query = query+" where "+filtro;
-                }
-                logger.debug(query);
-                connection.query(query, function (err, rows){
-                   connection.release();
-                   if(!err) {
-                       callback(rows);
-                   } else {
-                       logger.error(err);
-                       status = {code: 101, status: err.code, description: err.sqlMessage};
-                       callback(status);
-                   }
-                });
 
 
-            });
-        }, 1000);
+        select = "select * ";
+        from = " from usuario ";
+
+        query = select + from;
+
+        filtro = "";
+        if(data.id) {
+            filtro = filtro + " id = "+data.id;
+        }
+
+        if(data.descripcion) {
+            if(filtro!="") {filtro = filtro+" AND ";}
+            filtro = filtro + " nombre like('%"+data.nombre.replace(" ", "%")+"%')";
+        }
+
+        if(data.codigo) {
+            if(filtro!="") {filtro = filtro+" AND ";}
+            filtro = filtro + " apellido ="+data.apellido.replace(" ", "%")+"%')";
+        }
+
+        if(filtro!="") {
+            query = query+" where "+filtro;
+        }
+        logger.debug(query);
+        database.executeQuery(query, callback);
+        return;
+
+
     },
     post: function(data, callback) {
         logger.debug("usuarioService.post");
@@ -80,12 +65,15 @@ var UsuarioService =
             // El dato ya exista, no debería aceptarlo por POST, debería venir por PUT
         } else {
             if(data.hasOwnProperty("nombre") && data.hasOwnProperty("apellido") && data.hasOwnProperty("password")) {
-                resultado = this.insertarUsuario(data.nombre, data.apellido, data.password);
-
+                
+                query = "insert into usuario (nombre, apellido, password) values ('"+data.nombre+"','"+data.apellido+"',"+data.password+");";
+                database.executeQuery(query, callback);
+                return;
             } else {
                 resultado = {code: 400, status: "Los datos son incorrectos"};
             }
             callback(resultado);
+            return;
         }
     },
     put: function (data, callback) {
@@ -93,14 +81,19 @@ var UsuarioService =
         if(data.hasOwnProperty("id") && (data.id == "" || data.id == null)) {
             // El dato no existe, debería aceptarlo por POST, no por PUT
         } else {
-             if(data.hasOwnProperty("codigo") && data.hasOwnProperty("descripcion") && data.hasOwnProperty("id_nomenclador") && data.id_nomenclador !== null && data.id_nomenclador !== "") {
-                resultado = this.updateAgrupador(data.codigo, data.descripcion, data.id_nomenclador);
-
-            } else {
-                resultado = {code: 400, status: "Los datos son incorrectos"};
-            }
-            callback(resultado);
+            
+            cPassword= crypto.createHash('sha512').update(data.password).digest('hex');
+            
+            query = "update usuario set ";
+            query = query + " nombre = '"+data.nombre+"', ";
+            query = query + " apellido = '"+data.apellido+"', ";
+            query = query + " password = '"+cPassword+"' ";
+            query = query + " where id = "+data.id+";";
+            
+            database.executeQuery(query, callback);
+            return;
         }
+        return;
     },
     insertarUsuario: function (nombre, apellido, password) {
         logger.debug("insertarUsuario");

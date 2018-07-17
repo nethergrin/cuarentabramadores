@@ -1,9 +1,129 @@
-[2018-06-28T15:25:22.423] [DEBUG] default - { user: 'german.grin@gmail.com', password: '123456' }
-[2018-06-28T15:25:23.433] [DEBUG] default - ba3253876aed6bc22d4a6ff53d8406c6ad864195ed144ab5c87621b6c233b548baeae6956df346ec8c17f5ea10f35ee3cbc514797ed7ddd3145464e2a0bab413
-[2018-06-28T15:25:23.437] [DEBUG] default - Rows: 
-[2018-06-28T15:26:27.968] [INFO] default - Working on port 3001
-[2018-07-05T18:18:51.437] [INFO] default - Working on port 3001
-[2018-07-05T18:19:29.687] [INFO] default - Working on port 3001
-[2018-07-05T18:21:14.384] [INFO] default - Working on port 20000
-[2018-07-05T18:24:16.274] [INFO] default - Working on port 3001
-[2018-07-05T18:27:58.995] [INFO] default - Working on port 3001
+[2018-07-17T15:24:28.333] [INFO] default - relprestacionmasterprestacion - Post
+[2018-07-17T15:24:28.333] [INFO] default - relPrestacionMasterPrestacionService.POST
+[2018-07-17T15:24:28.333] [DEBUG] default - data: 
+[2018-07-17T15:24:28.333] [DEBUG] default - { id: null, id_prestacion: '10794', id_master_prestacion: '46' }
+[2018-07-17T15:24:28.333] [DEBUG] default - Database Provider: postgres
+[2018-07-17T15:24:28.333] [DEBUG] default - Query: insert into rel_prestacion_master_prestacion (id_prestacion, id_master_prestacion) values ( 10794,46)
+[2018-07-17T15:24:28.333] [DEBUG] default - ExecutePostgresQuery
+[2018-07-17T15:24:28.335] [INFO] default - masterprestacion - Get
+[2018-07-17T15:24:28.335] [DEBUG] default - MasterPrestacionService.get
+[2018-07-17T15:24:28.335] [DEBUG] default - Database Provider: postgres
+[2018-07-17T15:24:28.335] [DEBUG] default - Query: select mp.* from master_prestacion mp  inner join rel_prestacion_master_prestacion rpmp on rpmp.id_master_prestacion = mp.id  where  rpmp.id_prestacion = 10794
+[2018-07-17T15:24:28.335] [DEBUG] default - ExecutePostgresQuery
+[2018-07-17T15:24:29.387] [DEBUG] default - Ejecuto client.query
+[2018-07-17T15:24:29.390] [DEBUG] default - Ejecuto client.query
+[2018-07-17T15:24:29.446] [ERROR] default - { error: llave duplicada viola restricción de unicidad «rel_prestacion_master_prestacion_pkey»
+    at Connection.parseE (C:\Users\u33366954\Documents\NetBeans Projects\integradorJS\node_modules\pg\lib\connection.js:553:11)
+    at Connection.parseMessage (C:\Users\u33366954\Documents\NetBeans Projects\integradorJS\node_modules\pg\lib\connection.js:378:19)
+    at Socket.<anonymous> (C:\Users\u33366954\Documents\NetBeans Projects\integradorJS\node_modules\pg\lib\connection.js:119:22)
+    at emitOne (events.js:96:13)
+    at Socket.emit (events.js:188:7)
+    at readableAddChunk (_stream_readable.js:177:18)
+    at Socket.Readable.push (_stream_readable.js:135:10)
+    at TCP.onread (net.js:542:20)
+  name: 'error',
+  length: 282,
+  severity: 'ERROR',
+  code: '23505',
+  detail: 'Ya existe la llave (id)=(1).',
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: 'public',
+  table: 'rel_prestacion_master_prestacion',
+  column: undefined,
+  dataType: undefined,
+  constraint: 'rel_prestacion_master_prestacion_pkey',
+  file: 'src\\backend\\access\\nbtree\\nbtinsert.c',
+  line: '398',
+  routine: '_bt_check_unique' }
+[2018-07-17T15:24:29.452] [DEBUG] default - Ejecuto callback
+[2018-07-17T15:24:29.452] [DEBUG] default - { error: llave duplicada viola restricción de unicidad «rel_prestacion_master_prestacion_pkey»
+    at Connection.parseE (C:\Users\u33366954\Documents\NetBeans Projects\integradorJS\node_modules\pg\lib\connection.js:553:11)
+    at Connection.parseMessage (C:\Users\u33366954\Documents\NetBeans Projects\integradorJS\node_modules\pg\lib\connection.js:378:19)
+    at Socket.<anonymous> (C:\Users\u33366954\Documents\NetBeans Projects\integradorJS\node_modules\pg\lib\connection.js:119:22)
+    at emitOne (events.js:96:13)
+    at Socket.emit (events.js:188:7)
+    at readableAddChunk (_stream_readable.js:177:18)
+    at Socket.Readable.push (_stream_readable.js:135:10)
+    at TCP.onread (net.js:542:20)
+  name: 'error',
+  length: 282,
+  severity: 'ERROR',
+  code: '23505',
+  detail: 'Ya existe la llave (id)=(1).',
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: 'public',
+  table: 'rel_prestacion_master_prestacion',
+  column: undefined,
+  dataType: undefined,
+  constraint: 'rel_prestacion_master_prestacion_pkey',
+  file: 'src\\backend\\access\\nbtree\\nbtinsert.c',
+  line: '398',
+  routine: '_bt_check_unique',
+  error: true }
+[2018-07-17T15:25:47.104] [INFO] default - masterprestacion - Get
+[2018-07-17T15:25:47.104] [DEBUG] default - MasterPrestacionService.get
+[2018-07-17T15:25:47.104] [DEBUG] default - Database Provider: postgres
+[2018-07-17T15:25:47.105] [DEBUG] default - Query: select mp.* from master_prestacion mp  where  mp.nombre like('%res%')
+[2018-07-17T15:25:47.106] [DEBUG] default - ExecutePostgresQuery
+[2018-07-17T15:25:48.151] [DEBUG] default - Ejecuto client.query
+[2018-07-17T15:25:51.384] [INFO] default - relprestacionmasterprestacion - Post
+[2018-07-17T15:25:51.385] [INFO] default - relPrestacionMasterPrestacionService.POST
+[2018-07-17T15:25:51.385] [DEBUG] default - data: 
+[2018-07-17T15:25:51.385] [DEBUG] default - { id: null, id_prestacion: '10794', id_master_prestacion: '46' }
+[2018-07-17T15:25:51.385] [DEBUG] default - Database Provider: postgres
+[2018-07-17T15:25:51.385] [DEBUG] default - Query: insert into rel_prestacion_master_prestacion (id_prestacion, id_master_prestacion) values ( 10794,46)
+[2018-07-17T15:25:51.385] [DEBUG] default - ExecutePostgresQuery
+[2018-07-17T15:25:51.391] [INFO] default - masterprestacion - Get
+[2018-07-17T15:25:51.391] [DEBUG] default - MasterPrestacionService.get
+[2018-07-17T15:25:51.391] [DEBUG] default - Database Provider: postgres
+[2018-07-17T15:25:51.391] [DEBUG] default - Query: select mp.* from master_prestacion mp  inner join rel_prestacion_master_prestacion rpmp on rpmp.id_master_prestacion = mp.id  where  rpmp.id_prestacion = 10794
+[2018-07-17T15:25:51.391] [DEBUG] default - ExecutePostgresQuery
+[2018-07-17T15:25:52.419] [DEBUG] default - Ejecuto client.query
+[2018-07-17T15:25:52.426] [DEBUG] default - Ejecuto client.query
+[2018-07-17T15:25:52.438] [DEBUG] default - Ejecuto callback
+[2018-07-17T15:25:52.438] [DEBUG] default - []
+[2018-07-17T15:26:05.614] [INFO] default - masterprestacion - Get
+[2018-07-17T15:26:05.615] [DEBUG] default - MasterPrestacionService.get
+[2018-07-17T15:26:05.616] [DEBUG] default - Database Provider: postgres
+[2018-07-17T15:26:05.616] [DEBUG] default - Query: select mp.* from master_prestacion mp  inner join rel_prestacion_master_prestacion rpmp on rpmp.id_master_prestacion = mp.id  where  rpmp.id_prestacion = 10794
+[2018-07-17T15:26:05.616] [DEBUG] default - ExecutePostgresQuery
+[2018-07-17T15:26:06.648] [DEBUG] default - Ejecuto client.query
+[2018-07-17T15:26:24.867] [INFO] default - Prestacion/:id_prestacion/masterprestacion/:id - Delete
+[2018-07-17T15:26:24.867] [DEBUG] default - Database Provider: postgres
+[2018-07-17T15:26:24.867] [DEBUG] default - Query: delete from rel_prestacion_master_prestacion where id_master_prestacion = 46 AND id_prestacion = 10794
+[2018-07-17T15:26:24.867] [DEBUG] default - ExecutePostgresQuery
+[2018-07-17T15:26:25.898] [DEBUG] default - Ejecuto client.query
+[2018-07-17T15:26:27.221] [INFO] default - masterprestacion - Get
+[2018-07-17T15:26:27.221] [DEBUG] default - MasterPrestacionService.get
+[2018-07-17T15:26:27.221] [DEBUG] default - Database Provider: postgres
+[2018-07-17T15:26:27.221] [DEBUG] default - Query: select mp.* from master_prestacion mp  inner join rel_prestacion_master_prestacion rpmp on rpmp.id_master_prestacion = mp.id  where  rpmp.id_prestacion = 10794
+[2018-07-17T15:26:27.221] [DEBUG] default - ExecutePostgresQuery
+[2018-07-17T15:26:28.255] [DEBUG] default - Ejecuto client.query
+[2018-07-17T15:26:30.386] [INFO] default - masterprestacion - Get
+[2018-07-17T15:26:30.387] [DEBUG] default - MasterPrestacionService.get
+[2018-07-17T15:26:30.388] [DEBUG] default - Database Provider: postgres
+[2018-07-17T15:26:30.393] [DEBUG] default - Query: select mp.* from master_prestacion mp  inner join rel_prestacion_master_prestacion rpmp on rpmp.id_master_prestacion = mp.id  where  rpmp.id_prestacion = 10794
+[2018-07-17T15:26:30.393] [DEBUG] default - ExecutePostgresQuery
+[2018-07-17T15:26:31.422] [DEBUG] default - Ejecuto client.query
+[2018-07-17T15:26:33.788] [INFO] default - masterprestacion - Get
+[2018-07-17T15:26:33.788] [DEBUG] default - MasterPrestacionService.get
+[2018-07-17T15:26:33.788] [DEBUG] default - Database Provider: postgres
+[2018-07-17T15:26:33.789] [DEBUG] default - Query: select mp.* from master_prestacion mp  inner join rel_prestacion_master_prestacion rpmp on rpmp.id_master_prestacion = mp.id  where  rpmp.id_prestacion = 10794
+[2018-07-17T15:26:33.789] [DEBUG] default - ExecutePostgresQuery
+[2018-07-17T15:26:34.819] [DEBUG] default - Ejecuto client.query
+[2018-07-17T15:28:10.474] [INFO] default - Working on port 3001
+[2018-07-17T15:28:14.388] [INFO] default - relprestacionmasterprestacion - get
+[2018-07-17T15:28:14.389] [INFO] default - relPrestacionMasterPrestacionService.get
+[2018-07-17T15:28:14.389] [INFO] default - select * from rel_prestacion_master_prestacion 
+[2018-07-17T15:28:14.389] [DEBUG] default - Database Provider: postgres
+[2018-07-17T15:28:14.390] [DEBUG] default - Query: select * from rel_prestacion_master_prestacion 
+[2018-07-17T15:28:14.433] [DEBUG] default - ExecutePostgresQuery
+[2018-07-17T15:28:15.472] [DEBUG] default - Ejecuto client.query

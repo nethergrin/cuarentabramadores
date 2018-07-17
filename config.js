@@ -10,10 +10,18 @@ var config = {};
 config.db = {};
 config.auth = {};
 
-config.db.user = "nomenclador";
-config.db.password = "nomenclador";
+//config.db.provider = "mysql";
+//config.db.user = "nomenclador";
+//config.db.password = "nomenclador";
+//config.db.host = "127.0.0.1";
+//config.db.database = "nomenclador";
+//config.db.connectionLimit = "100";
+
+config.db.provider = "postgres";
+config.db.user = "u33366954";
+config.db.password = "VentasADS";
 config.db.host = "127.0.0.1";
-config.db.database = "nomenclador";
+config.db.database = "snomed";
 config.db.connectionLimit = "100";
 
 config.auth.type = "internal";

@@ -26,6 +26,87 @@ and open the template in the editor.
                 console.log(data);
                 xhr.send(JSON.stringify( data));
             };
+            function prestacionPost() {
+                xhr = new XMLHttpRequest();
+                xhr.open('POST',"/prestacion");
+                xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                data = {id:10823, codigo: '345', id_master_prestacion:1, descripcion: "Prestacion de test", id_agrupador: 277, detalle: "", inclusiones: "", exclusiones: ""};
+                console.log(data);
+                xhr.send(JSON.stringify(data));
+            };
+            function masterprestacionPost() {
+                xhr = new XMLHttpRequest();
+                xhr.open('POST',"/masterprestacion");
+                xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                data = {id:'', nombre: "Master Prestacion de test", es_practica: 1, concept_id: "", preparacion: ""};
+                console.log(data);
+                xhr.send(JSON.stringify(data));
+            };
+            function agrupadorPost() {
+                xhr = new XMLHttpRequest();
+                xhr.open('POST',"/agrupador");
+                xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                data = {id:'', codigo: '345', id_nomenclador:4, descripcion: "Agrupador de prueba"};
+                console.log(data);
+                xhr.send(JSON.stringify(data));
+            };
+            
+            function nomencladorPost() {
+                xhr = new XMLHttpRequest();
+                xhr.open('POST',"/nomenclador");
+                xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                data = {id:null, nombre: 'TEST POST'};
+                console.log(data);
+                xhr.send(JSON.stringify( data));
+            };
+            
+            function nomencladorGet() {
+                xhr = new XMLHttpRequest();
+                xhr.open('GET',"/nomenclador");
+                xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                xhr.send();
+            };
+            function agrupadorGet() {
+                xhr = new XMLHttpRequest();
+                xhr.open('GET',"/agrupador");
+                xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                xhr.send();
+            };
+            function prestacionGet() {
+                xhr = new XMLHttpRequest();
+                xhr.open('GET',"/prestacion");
+                xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                xhr.send();
+            };
+            function masterprestacionGet() {
+                xhr = new XMLHttpRequest();
+                xhr.open('GET',"/masterprestacion");
+                xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                xhr.send();
+            };
+            function prestacionmasterprestacionGet() {
+                xhr = new XMLHttpRequest();
+                xhr.open('GET',"/relprestacionmasterprestacion");
+                xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                xhr.send();
+            };
+            
+            function agrupadorPut() {
+                xhr = new XMLHttpRequest();
+                xhr.open('PUT',"/agrupador");
+                xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                data = {id:'611', codigo: '345', id_nomenclador:4, descripcion: "Modificado"};
+                console.log(data);
+                xhr.send(JSON.stringify(data));
+            };
+            function masterprestacionPut() {
+                xhr = new XMLHttpRequest();
+                xhr.open('PUT',"/masterprestacion");
+                xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                data = {id:'3301', nombre: "Master Prestacion de test modificada", es_practica: 1, concept_id: "", preparacion: ""};
+                console.log(data);
+                xhr.send(JSON.stringify(data));
+            };
         </script>
     </head>
     <body>
