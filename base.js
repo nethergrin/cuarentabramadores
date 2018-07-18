@@ -30,10 +30,8 @@ var database = {
             case "postgres":
                 var pg = require("pg");
                 var pool;
-                if(config.db.heroku==="true") {
-                    pool = pg.Pool({
-                        connectionString: config.db.herokuConnectionString
-                    });
+                if(config.db.env==="true") {
+                    pool = pg.Pool();
                 } else {
                     pool = pg.Pool({
                     host : config.db.host,
