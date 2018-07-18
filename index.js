@@ -353,7 +353,8 @@ app.get('/login', function(req, res) {
     res.end();
 });
 
+var port = process.env.PORT || 3001;
 
-app.listen(3001,function(){
-    logger.info("Working on port 3001"); 
+app.listen(port,function(){
+    logger.info("Working on port "+port); 
 });
