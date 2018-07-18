@@ -29,7 +29,11 @@ var database = {
                 
             case "postgres":
                 var pg = require("pg");
-                pool = pg.Pool({
+                var pool;
+                if(config.db.heroku==="true") {
+                    pool = pg.Pool();
+                } else {
+                    pool = pg.Pool({
                     host : config.db.host,
                     user :config.db.user,
                     password:config.db.password,
@@ -37,7 +41,10 @@ var database = {
                     max:config.db.connectionLimit,
                     idleTimeoutMillis: 10000
                     });
+                }
+                
                 this.executePostgresQuery(query, pool, callback);
+                
                 break;
         }
         return;

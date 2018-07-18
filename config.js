@@ -17,10 +17,13 @@ config.auth = {};
 //config.db.database = "nomenclador";
 //config.db.connectionLimit = "100";
 
+config.db.heroku="true";
+
 config.db.provider = "postgres";
 config.db.user = "u33366954";
 config.db.password = "VentasADS";
 config.db.host = "127.0.0.1";
+config.db.host = "DATABASE_URL";
 config.db.database = "snomed";
 config.db.connectionLimit = "100";
 
