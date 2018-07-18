@@ -31,7 +31,9 @@ var database = {
                 var pg = require("pg");
                 var pool;
                 if(config.db.heroku==="true") {
-                    pool = pg.Pool();
+                    pool = pg.Pool({
+                        connectionString: config.db.herokuConnectionString
+                    });
                 } else {
                     pool = pg.Pool({
                     host : config.db.host,

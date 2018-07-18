@@ -18,6 +18,7 @@ config.auth = {};
 //config.db.connectionLimit = "100";
 
 config.db.heroku="true";
+config.db.herokuConnectionString="DATABASE_URI";
 
 config.db.provider = "postgres";
 config.db.user = "u33366954";
